@@ -4,7 +4,8 @@ import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:telus_partner_non_responsive/constants/colors.dart';
 import 'package:telus_partner_non_responsive/controllers/db_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/organization_controller.dart';
-import 'package:telus_partner_non_responsive/models/organization_model.dart';
+import 'package:telus_partner_non_responsive/controllers/user_data_controller.dart';
+import 'package:telus_partner_non_responsive/models/user_data_model.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_heading.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_text.dart';
 
@@ -12,6 +13,7 @@ Widget organizationsListCard() {
   DbController dbController = Get.put(DbController());
   OrganizationController organizationController =
       Get.put(OrganizationController());
+  UserDataController userDataController = Get.put(UserDataController());
   return Padding(
     padding: const EdgeInsets.all(16),
     child: Column(
@@ -19,7 +21,7 @@ Widget organizationsListCard() {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: customHeading(
-            text: "Organizations",
+            text: "Employees",
             fontSize: 24,
           ),
         ),
@@ -42,26 +44,33 @@ Widget organizationsListCard() {
               children: [
                 PaginateFirestore(
                   shrinkWrap: true,
-                  itemBuilderType:
-                      PaginateBuilderType.listView,
+                  itemBuilderType: PaginateBuilderType.listView,
                   itemBuilder: (index, context, documentSnapshot) {
-                    OrganizationModel organizationModel =
-                        OrganizationModel.fromDocumentSnapshot(
-                            documentSnapshot);
+                    UserDataModel organizationEmployee =
+                        UserDataModel.fromDocumentSnapshot(documentSnapshot);
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: InkWell(
                         onTap: () {
-                          organizationController.selectedOrganizationModel =
-                              organizationModel;
+                          userDataController.selectedEmployee =
+                              organizationEmployee;
                         },
-                        child: organizationsCard(
-                          name: organizationModel.name,
+                        child: employeeCard(
+                          name: organizationEmployee.firstName +
+                              " " +
+                              organizationEmployee.lastName,
+                          date: organizationEmployee.dateAdded,
+                          type: organizationEmployee.type,
                         ),
                       ),
                     );
                   },
-                  query: dbController.organizationCollection,
+                  query: dbController.userCollection
+                      .where("organization",
+                          isEqualTo: organizationController
+                              .selectedOrganizationModel.reference.id
+                              .toString())
+                      .orderBy("date", descending: true),
                   isLive: true,
                 ),
               ],
@@ -73,11 +82,11 @@ Widget organizationsListCard() {
   );
 }
 
-Widget organizationsCard({
+Widget employeeCard({
   name = "...",
+  type = "...",
+  date = "...",
 }) {
-  OrganizationController organizationController =
-      Get.put(OrganizationController());
   return Container(
     height: 50,
     constraints: const BoxConstraints(
@@ -86,9 +95,7 @@ Widget organizationsCard({
     ),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(15),
-      color: name == organizationController.selectedOrganizationModel
-          ? purpleDark
-          : white,
+      color: white,
       boxShadow: [
         BoxShadow(
           color: Colors.black.withOpacity(0.3),
@@ -98,11 +105,38 @@ Widget organizationsCard({
         ),
       ],
     ),
-    child: customText(
-      text: name,
-      textColor: name == organizationController.selectedOrganizationModel
-          ? white
-          : purpleDark,
+    child: Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(
+            top: 8.0,
+            left: 8.0,
+            right: 8.0,
+          ),
+          child: customText(
+            text: name,
+            textColor: purpleDark,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: customText(
+            text: type,
+            textColor: purpleDark,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(
+            bottom: 8.0,
+            left: 8.0,
+            right: 8.0,
+          ),
+          child: customText(
+            text: date,
+            textColor: purpleDark,
+          ),
+        ),
+      ],
     ),
   );
 }

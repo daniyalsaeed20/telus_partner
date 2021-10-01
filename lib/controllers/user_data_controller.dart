@@ -29,6 +29,7 @@ class UserDataController extends GetxController {
   static TextEditingController userTypeController = TextEditingController();
 
   UserDataModel userDataModel = UserDataModel();
+  UserDataModel selectedEmployee = UserDataModel();
 
   bool userExists = false;
   static int selectedTab = 0;

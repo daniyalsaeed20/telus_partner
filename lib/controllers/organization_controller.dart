@@ -9,7 +9,7 @@ class OrganizationController extends GetxController{
 
   static GlobalKey organizationFormKey = GlobalKey<FormState>();
 
-  OrganizationModel organizationModel = OrganizationModel();
+  OrganizationModel selectedOrganizationModel = OrganizationModel();
 
   
   static TextEditingController organizationNameController = TextEditingController();

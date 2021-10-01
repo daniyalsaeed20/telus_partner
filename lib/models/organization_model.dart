@@ -1,4 +1,6 @@
-import 'package:firebase/firestore.dart';
+
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class OrganizationModel {
   OrganizationModel({
@@ -22,13 +24,13 @@ class OrganizationModel {
 
   factory OrganizationModel.fromDocumentSnapshot(DocumentSnapshot doc) {
     return OrganizationModel(
-      name: doc.data()["name"],
-      address: doc.data()["address"],
-      employeeIds: doc.data()["employeeIds"],
-      leadIds: doc.data()["leadIds"],
-      leads: doc.data()["leads"],
-      totalEmployees: doc.data()["totalEmployees"] ?? false,
-      reference: doc.ref,
+      name: doc["name"],
+      address: doc["address"],
+      employeeIds: doc["employeeIds"],
+      leadIds: doc["leadIds"],
+      leads: doc["leads"],
+      totalEmployees: doc["totalEmployees"] ?? false,
+      reference: doc.reference,
     );
   }
 
