@@ -1,6 +1,5 @@
 // ignore_for_file: avoid_function_literals_in_foreach_calls
 
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +7,10 @@ import 'package:get/get.dart';
 import 'package:telus_partner_non_responsive/constants/colors.dart';
 import 'package:telus_partner_non_responsive/controllers/leads_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/loading_controller.dart';
+import 'package:telus_partner_non_responsive/controllers/organization_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/user_data_controller.dart';
 import 'package:telus_partner_non_responsive/models/leads/leads_model.dart';
+import 'package:telus_partner_non_responsive/models/organization_model.dart';
 import 'package:telus_partner_non_responsive/models/user_data_model.dart';
 import 'package:telus_partner_non_responsive/views/Admin/admin_home_page.dart';
 import 'package:telus_partner_non_responsive/views/Employee/employee_home_page.dart';
@@ -155,8 +156,8 @@ class DbController extends GetxController {
   }
 
   goToDashboard(String userType) {
-    if(userType == "Admin"){
-     Get.to(()=> AdminHomePage());
+    if (userType == "Admin") {
+      Get.to(() => AdminHomePage());
     }
     if (userType == "Manager") {
       Get.to(() => ManagerHomePage());
@@ -311,11 +312,14 @@ class DbController extends GetxController {
       snapShots.docs.forEach(
         (doc) {
           if (doc["status"] == "Pending") {
-            leadsController.organizationPendingLeads = leadsController.organizationPendingLeads + 1;
+            leadsController.organizationPendingLeads =
+                leadsController.organizationPendingLeads + 1;
           } else if (doc["status"] == "Approved") {
-            leadsController.organizationApprovedLeads = leadsController.organizationApprovedLeads + 1;
+            leadsController.organizationApprovedLeads =
+                leadsController.organizationApprovedLeads + 1;
           } else if (doc["status"] == "Canceled") {
-            leadsController.organizationCanceledLeads = leadsController.organizationCanceledLeads + 1;
+            leadsController.organizationCanceledLeads =
+                leadsController.organizationCanceledLeads + 1;
           }
           leadsController.organizationLeads.add(
             Leads.fromDocumentSnapshot(
@@ -328,8 +332,57 @@ class DbController extends GetxController {
     leadsController.update();
   }
 
+  getOrgLeads() async {
+    OrganizationController organizationController =
+        Get.put(OrganizationController());
+    organizationController.organizationPendingLeads = 0;
+    organizationController.organizationApprovedLeads = 0;
+    organizationController.organizationCanceledLeads = 0;
+    var snapShots = await leadsCollection
+        .where("organizationId",
+            isEqualTo: organizationController
+                .selectedOrganizationModel.reference.id
+                .toString())
+        .get();
+    if (snapShots.size > 0) {
+      snapShots.docs.forEach(
+        (doc) {
+          if (doc["status"] == "Pending") {
+            organizationController.organizationPendingLeads =
+                organizationController.organizationPendingLeads + 1;
+          } else if (doc["status"] == "Approved") {
+            organizationController.organizationApprovedLeads =
+                organizationController.organizationApprovedLeads + 1;
+          } else if (doc["status"] == "Canceled") {
+            organizationController.organizationCanceledLeads =
+                organizationController.organizationCanceledLeads + 1;
+          }
+          organizationController.organizationLeads.add(
+            Leads.fromDocumentSnapshot(
+              doc,
+            ),
+          );
+        },
+      );
+    }
+    organizationController.update();
+  }
+
   addEmployee(UserDataModel userDataModel) {
+    OrganizationController organizationController =
+        Get.put(OrganizationController());
     userCollection.add(userDataModel.toMap());
+    if (userDataModel.type == "Employee") {
+      organizationController.selectedOrganizationModel.totalEmployees =
+          organizationController.selectedOrganizationModel.totalEmployees + 1;
+    } else if (userDataModel.type == "Manager") {
+      organizationController.selectedOrganizationModel.totalManagers =
+          organizationController.selectedOrganizationModel.totalManagers + 1;
+    }
+    organizationCollection
+        .doc(organizationController.selectedOrganizationModel.reference.id)
+        .update(organizationController.selectedOrganizationModel
+            .toMapForEmployees());
     Get.snackbar(
       'Success.',
       'User Added Successfully',
@@ -337,6 +390,10 @@ class DbController extends GetxController {
       colorText: white,
       duration: const Duration(seconds: 7),
     );
+  }
+
+  deleteEmployee(UserDataModel userDataModel) {
+    userCollection.doc(userDataModel.reference.id).delete();
   }
 
   getEmployeeList() async {
@@ -370,5 +427,24 @@ class DbController extends GetxController {
       );
     }
     leadsController.update();
+  }
+
+  saveOrganization(OrganizationModel organizationModel) {
+    organizationCollection.add(organizationModel.toMap());
+    Get.snackbar(
+      'Success.',
+      'Organization Added Successfully',
+      backgroundColor: Colors.black,
+      colorText: white,
+      duration: const Duration(seconds: 7),
+    );
+  }
+
+  changeLeadStatus(
+    String string,
+    Leads leads,
+  ) {
+    leads.status = string;
+    leadsCollection.doc(leads.reference.id).update(leads.toMapForStatus());
   }
 }

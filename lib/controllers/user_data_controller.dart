@@ -30,11 +30,13 @@ class UserDataController extends GetxController {
 
   UserDataModel userDataModel = UserDataModel();
   UserDataModel selectedEmployee = UserDataModel();
+  UserDataModel selectedUserModel = UserDataModel();
 
   bool userExists = false;
   static int selectedTab = 0;
 
   String date;
+  String selectedUserType;
 
   /* -------------------------------------------------------------------------- */
   /*                                    List                                    */

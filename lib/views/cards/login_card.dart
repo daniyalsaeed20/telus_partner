@@ -306,7 +306,6 @@ Widget userTypeButton({
   fontWeight = FontWeight.bold,
   width = 100,
   height = 50,
-  function,
 }) {
   AppController appController = Get.put(AppController());
   return InkWell(

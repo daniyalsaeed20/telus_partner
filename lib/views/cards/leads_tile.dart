@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:telus_partner_non_responsive/constants/colors.dart';
+import 'package:telus_partner_non_responsive/controllers/user_data_controller.dart';
 import 'package:telus_partner_non_responsive/views/cards/porting_request_details_card.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_heading.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_text.dart';
@@ -33,6 +34,7 @@ Widget leadTile({
   hst = "...",
   personalInfo = "...",
   packageDetails = "...",
+  changeStatusFunction,
 }) {
   return Padding(
     padding: const EdgeInsets.only(
@@ -63,9 +65,12 @@ Widget leadTile({
             ),
             SizedBox(
               width: 200,
-              child: statusIcon(
-                color: color,
-                status: status,
+              child: InkWell(
+                onTap: changeStatusFunction,
+                child: statusIcon(
+                  color: color,
+                  status: status,
+                ),
               ),
             ),
             SizedBox(
@@ -76,13 +81,14 @@ Widget leadTile({
               ),
             ),
             SizedBox(
-              width: 200,
+              width: 10,
               child: InkWell(
                 onTap: () {
                   Get.dialog(
                     AlertDialog(
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15)),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 48,
                         vertical: 48,
@@ -1069,7 +1075,7 @@ Widget leadTile({
                                 ),
                               ),
                               Container(
-                                width: Get.width,
+                                  width: Get.width,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(15),
                                     color: backgroundColor,

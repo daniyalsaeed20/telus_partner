@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:telus_partner_non_responsive/constants/colors.dart';
 import 'package:telus_partner_non_responsive/controllers/db_controller.dart';
+import 'package:telus_partner_non_responsive/controllers/organization_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/user_data_controller.dart';
 import 'package:telus_partner_non_responsive/models/leads/leads_model.dart';
 import 'package:telus_partner_non_responsive/models/user_data_model.dart';
@@ -11,105 +12,118 @@ import 'package:telus_partner_non_responsive/views/widgets/custom_heading.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_text.dart';
 
 Widget employeesList() {
-  UserDataController userDataController = Get.put(UserDataController());
-  return GetBuilder<DbController>(
-      init: DbController(),
-      builder: (dbController) {
-        return Container(
-          height: 600,
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.5),
-                offset: const Offset(0, 3),
-                blurRadius: 7,
-                spreadRadius: 2,
-              )
-            ],
-            borderRadius: BorderRadius.circular(
-              15,
-            ),
-            color: white,
-          ),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  return GetBuilder<OrganizationController>(
+      init: OrganizationController(),
+      builder: (organizationController) {
+        return GetBuilder<DbController>(
+            init: DbController(),
+            builder: (dbController) {
+              return Container(
+                height: 600,
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.5),
+                      offset: const Offset(0, 3),
+                      blurRadius: 7,
+                      spreadRadius: 2,
+                    )
+                  ],
+                  borderRadius: BorderRadius.circular(
+                    15,
+                  ),
+                  color: white,
+                ),
+                child: Column(
                   children: [
-                    const SizedBox(
-                      width: 175,
-                    ),
-                    SizedBox(
-                      width: 175,
-                      child: customHeading(
-                        text: "Name",
+                    Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          const SizedBox(
+                            width: 75,
+                          ),
+                          SizedBox(
+                            width: 175,
+                            child: customHeading(
+                              text: "Name",
+                              fontSize: 14,
+                            ),
+                          ),
+                          SizedBox(
+                            width: 175,
+                            child: customHeading(
+                              text: "Date Added",
+                              fontSize: 14,
+                            ),
+                          ),
+                          SizedBox(
+                            width: 175,
+                            child: customHeading(
+                              text: "Total Submissions",
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 75,
+                          ),
+                        ],
                       ),
                     ),
                     SizedBox(
-                      width: 250,
-                      child: customHeading(
-                        text: "Date Added",
+                      height: 500,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            if (organizationController
+                                    .selectedOrganizationModel.reference !=
+                                null)
+                              PaginateFirestore(
+                                shrinkWrap: true,
+                                // Use SliverAppBar in header to make it sticky
+
+                                // item builder type is compulsory.
+                                itemBuilderType: PaginateBuilderType
+                                    .listView, //Change types accordingly
+                                itemBuilder:
+                                    (index, context, documentSnapshot) {
+                                  UserDataModel userModel = UserDataModel(
+                                    email: documentSnapshot["email"],
+                                    firstName: documentSnapshot["firstName"],
+                                    isAllowed: documentSnapshot["isAllowed"],
+                                    lastName: documentSnapshot["lastName"],
+                                    leadIds: documentSnapshot["leadIds"],
+                                    organization:
+                                        documentSnapshot["organization"],
+                                    password: documentSnapshot["password"],
+                                    dateAdded: documentSnapshot["dateAdded"],
+                                    reference: documentSnapshot.reference,
+                                    type: documentSnapshot["type"],
+                                  );
+
+                                  return userModel.type == "Employee"
+                                      ? employeeListCard(
+                                          userModel,
+                                          controller: dbController,
+                                        )
+                                      : Container();
+                                },
+                                query: dbController.userCollection.where(
+                                    "organization",
+                                    isEqualTo: organizationController
+                                        .selectedOrganizationModel.reference.id
+                                        .toString()),
+                                isLive: true,
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      width: 250,
-                      child: customHeading(
-                        text: "Total Submissions",
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 250,
                     ),
                   ],
                 ),
-              ),
-              SizedBox(
-                height: 500,
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      PaginateFirestore(
-                        shrinkWrap: true,
-                        // Use SliverAppBar in header to make it sticky
-
-                        // item builder type is compulsory.
-                        itemBuilderType: PaginateBuilderType
-                            .listView, //Change types accordingly
-                        itemBuilder: (index, context, documentSnapshot) {
-                          UserDataModel userModel = UserDataModel(
-                            email: documentSnapshot["email"],
-                            firstName: documentSnapshot["firstName"],
-                            isAllowed: documentSnapshot["isAllowed"],
-                            lastName: documentSnapshot["lastName"],
-                            leadIds: documentSnapshot["leadIds"],
-                            organization: documentSnapshot["organization"],
-                            password: documentSnapshot["password"],
-                            dateAdded: documentSnapshot["dateAdded"],
-                            reference: documentSnapshot.reference,
-                            type: documentSnapshot["type"],
-                          );
-
-                          return userModel.type == "Employee"
-                              ? employeeListCard(
-                                  userModel,
-                                  controller: dbController,
-                                )
-                              : Container();
-                        },
-                        query: dbController.userCollection.where("organization",
-                            isEqualTo:
-                                userDataController.userDataModel.organization),
-                        isLive: true,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
+              );
+            });
       });
 }
 
@@ -118,7 +132,7 @@ Widget employeeListCard(UserDataModel userModel, {controller}) {
     children: [
       Padding(
         padding: const EdgeInsets.only(
-          bottom: 32,
+          bottom: 8,
           left: 32,
           right: 32,
         ),
@@ -126,7 +140,7 @@ Widget employeeListCard(UserDataModel userModel, {controller}) {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             const SizedBox(
-              width: 175,
+              width: 75,
               child: CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.transparent,
@@ -138,23 +152,26 @@ Widget employeeListCard(UserDataModel userModel, {controller}) {
             SizedBox(
               width: 175,
               child: customText(
+                fontSize: 14,
                 text: userModel.firstName + " " + userModel.lastName,
               ),
             ),
             SizedBox(
-              width: 250,
+              width: 175,
               child: customText(
+                fontSize: 14,
                 text: userModel.dateAdded,
               ),
             ),
             SizedBox(
-              width: 250,
+              width: 175,
               child: customText(
+                fontSize: 14,
                 text: userModel.leadIds.toString(),
               ),
             ),
             SizedBox(
-              width: 250,
+              width: 75,
               child: InkWell(
                 onTap: () {
                   Get.dialog(
@@ -169,7 +186,10 @@ Widget employeeListCard(UserDataModel userModel, {controller}) {
                       backgroundColor: Colors.white,
                       content: SizedBox(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16,),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 16,
+                          ),
                           child: SizedBox(
                             height: 570,
                             child: SingleChildScrollView(
@@ -231,52 +251,57 @@ Widget employeeListCard(UserDataModel userModel, {controller}) {
                                     ),
                                   ),
                                   PaginateFirestore(
-                            shrinkWrap: true,
-                            // Use SliverAppBar in header to make it sticky
+                                    shrinkWrap: true,
+                                    // Use SliverAppBar in header to make it sticky
 
-                            // item builder type is compulsory.
-                            itemBuilderType: PaginateBuilderType
-                                .listView, //Change types accordingly
-                            itemBuilder: (index, context, documentSnapshot) {
-                              Leads lead =
-                                  Leads.fromDocumentSnapshot(documentSnapshot);
-                              return leadTile(
-                                status: lead.status,
-                                date: lead.date,
-                                time: lead.time,
-                                clientName: lead.customerName,
-                                additionalInfo: lead.customerPackageDetails,
-                                clientEmail: lead.customerEmail,
-                                employeeEmail: lead.employeeId,
-                                employeeName: lead.representativeName,
-                                portingInfoModel: lead.portingRequests,
-
-
-                                address: lead.customerAddress,
-                                city: lead.customerCity,
-                                customerContactPhoneNumber: lead.customerContactPhoneNumber,
-                                customerInterestOpportunity: lead.customerInterestOpportunity,
-                                customerName: lead.customerName,
-                                dob: lead.customerDateOfBirth,
-                                email: lead.customerEmail,
-                                hst: lead.customerBusinessHST,
-                                packageDetails: lead.customerPackageDetails,
-                                partnerCompanyName: lead.partnerCompanyName,
-                                personalInfo: lead.customerPersonalInformation,
-                                postalCode: lead.customerPostalCode,
-                                province: lead.customerProvince,
-                                representativeName: lead.representativeName,
-                                representativePhoneNumber: lead.representativePhoneNumber,
-
-                                
-                              );
-                            },
-                            query: controller.leadsCollection
-                                .where("employeeId",
-                                    isEqualTo: userModel.reference.id)
-                                .orderBy("date",descending: true),
-                            isLive: true,
-                          ),
+                                    // item builder type is compulsory.
+                                    itemBuilderType: PaginateBuilderType
+                                        .listView, //Change types accordingly
+                                    itemBuilder:
+                                        (index, context, documentSnapshot) {
+                                      Leads lead = Leads.fromDocumentSnapshot(
+                                          documentSnapshot);
+                                      return leadTile(
+                                        status: lead.status,
+                                        date: lead.date,
+                                        time: lead.time,
+                                        clientName: lead.customerName,
+                                        additionalInfo:
+                                            lead.customerPackageDetails,
+                                        clientEmail: lead.customerEmail,
+                                        employeeEmail: lead.employeeId,
+                                        employeeName: lead.representativeName,
+                                        portingInfoModel: lead.portingRequests,
+                                        address: lead.customerAddress,
+                                        city: lead.customerCity,
+                                        customerContactPhoneNumber:
+                                            lead.customerContactPhoneNumber,
+                                        customerInterestOpportunity:
+                                            lead.customerInterestOpportunity,
+                                        customerName: lead.customerName,
+                                        dob: lead.customerDateOfBirth,
+                                        email: lead.customerEmail,
+                                        hst: lead.customerBusinessHST,
+                                        packageDetails:
+                                            lead.customerPackageDetails,
+                                        partnerCompanyName:
+                                            lead.partnerCompanyName,
+                                        personalInfo:
+                                            lead.customerPersonalInformation,
+                                        postalCode: lead.customerPostalCode,
+                                        province: lead.customerProvince,
+                                        representativeName:
+                                            lead.representativeName,
+                                        representativePhoneNumber:
+                                            lead.representativePhoneNumber,
+                                      );
+                                    },
+                                    query: controller.leadsCollection
+                                        .where("employeeId",
+                                            isEqualTo: userModel.reference.id)
+                                        .orderBy("date", descending: true),
+                                    isLive: true,
+                                  ),
                                 ],
                               ),
                             ),

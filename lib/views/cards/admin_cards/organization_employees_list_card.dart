@@ -9,7 +9,7 @@ import 'package:telus_partner_non_responsive/models/user_data_model.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_heading.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_text.dart';
 
-Widget organizationsListCard() {
+Widget organizationEmployeesListCard() {
   DbController dbController = Get.put(DbController());
   OrganizationController organizationController =
       Get.put(OrganizationController());

@@ -128,6 +128,12 @@ class Leads {
       "portingRequests": _portingRequests ?? []
     };
   }
+
+  Map<String, dynamic> toMapForStatus() {
+    return {
+      "status": status ?? "N/A",
+    };
+  }
 }
 
 class PortingInfoModel {

@@ -4,17 +4,17 @@ import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:telus_partner_non_responsive/constants/colors.dart';
 import 'package:telus_partner_non_responsive/controllers/db_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/organization_controller.dart';
+import 'package:telus_partner_non_responsive/controllers/user_data_controller.dart';
 import 'package:telus_partner_non_responsive/models/organization_model.dart';
+import 'package:telus_partner_non_responsive/models/user_data_model.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_heading.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_text.dart';
 
-Widget organizationsListCard({
-  leadsRequired = true,
-}) {
+Widget requestListCard() {
   DbController dbController = Get.put(DbController());
-  return GetBuilder<OrganizationController>(
-      init: OrganizationController(),
-      builder: (organizationController) {
+  return GetBuilder<UserDataController>(
+      init: UserDataController(),
+      builder: (userDataController) {
         return Padding(
           padding: const EdgeInsets.all(16),
           child: Container(
@@ -41,7 +41,7 @@ Widget organizationsListCard({
                   child: Row(
                     children: [
                       customHeading(
-                        text: "All Organizations",
+                        text: "All Requests",
                         fontSize: 20,
                       ),
                     ],
@@ -57,7 +57,7 @@ Widget organizationsListCard({
                           SizedBox(
                             width: 175,
                             child: customHeading(
-                              text: "Title",
+                              text: "Name",
                               headingColor: Colors.grey,
                               fontSize: 14,
                             ),
@@ -65,7 +65,7 @@ Widget organizationsListCard({
                           SizedBox(
                             width: 75,
                             child: customHeading(
-                              text: "Employees",
+                              text: "Type",
                               headingColor: Colors.grey,
                               fontSize: 14,
                             ),
@@ -73,7 +73,7 @@ Widget organizationsListCard({
                           SizedBox(
                             width: 75,
                             child: customHeading(
-                              text: "Managers",
+                              text: "Email",
                               headingColor: Colors.grey,
                               fontSize: 14,
                             ),
@@ -107,33 +107,44 @@ Widget organizationsListCard({
                                 shrinkWrap: true,
                                 itemBuilderType: PaginateBuilderType.listView,
                                 itemBuilder: (index, context, documentSnapshot) {
-                                  OrganizationModel organizationModel =
-                                      OrganizationModel.fromDocumentSnapshot(
+                                  UserDataModel userDataModel =
+                                      UserDataModel.fromDocumentSnapshot(
                                           documentSnapshot);
                                   return Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: InkWell(
                                       onTap: () {
-                                        organizationController
-                                                .selectedOrganizationModel =
-                                            organizationModel;
-                                            if(leadsRequired == true){
-                                              organizationController.getOrganizationLeads();
-                                            }
-                                        organizationController.update();
+                                        userDataController.selectedUserModel =
+                                            userDataModel;
+                                        UserDataController.firstNameController.text =
+                                            userDataController
+                                                .selectedUserModel.firstName;
+                                        UserDataController.lastNameController.text =
+                                            userDataController
+                                                .selectedUserModel.lastName;
+                                        UserDataController.emailController.text =
+                                            userDataController
+                                                .selectedUserModel.email;
+                                        UserDataController.passwordController.text =
+                                            userDataController
+                                                .selectedUserModel.password;
+                                        userDataController.selectedUserType =
+                                            userDataController.selectedUserModel.type;
+                                        userDataController.update();
                                       },
-                                      child: organizationsCard(
-                                        name: organizationModel.name,
-                                        dateAdded: organizationModel.dateAdded,
-                                        totalEmployees:
-                                            organizationModel.totalEmployees.toString(),
-                                        totalManagers:
-                                            organizationModel.totalManagers.toString(),
+                                      child: employee(
+                                        name: userDataModel.firstName +
+                                            " " +
+                                            userDataModel.lastName,
+                                        dateAdded: userDataModel.dateAdded,
+                                        type: userDataModel.type.toString(),
+                                        email: userDataModel.email.toString(),
                                       ),
                                     ),
                                   );
                                 },
-                                query: dbController.organizationCollection,
+                                query: dbController.userCollection
+                                    .where("isAllowed", isEqualTo: false),
                                 isLive: true,
                               ),
                             ],
@@ -150,18 +161,18 @@ Widget organizationsListCard({
       });
 }
 
-Widget organizationsCard({
+Widget employee({
   name = "...",
-  totalEmployees = "...",
-  totalManagers = "...",
+  type = "...",
+  email = "...",
   dateAdded = "...",
 }) {
-  OrganizationController organizationController =
-      Get.put(OrganizationController());
+  UserDataController userDataController = Get.put(UserDataController());
   return Column(
     children: [
       Container(
-        color: name == organizationController.selectedOrganizationModel.name
+        color: email ==
+                userDataController.selectedUserModel.email
             ? purple
             : white,
         child: Padding(
@@ -173,8 +184,8 @@ Widget organizationsCard({
                 width: 175,
                 child: customText(
                   text: name,
-                  textColor: name !=
-                          organizationController.selectedOrganizationModel.name
+                  textColor: email !=
+                          userDataController.selectedUserModel.email
                       ? Colors.black
                       : white,
                   fontSize: 14,
@@ -183,9 +194,9 @@ Widget organizationsCard({
               SizedBox(
                 width: 75,
                 child: customText(
-                  text: totalEmployees,
-                  textColor: name !=
-                          organizationController.selectedOrganizationModel.name
+                  text: type,
+                  textColor: email !=
+                          userDataController.selectedUserModel.email
                       ? Colors.grey
                       : white,
                   fontSize: 14,
@@ -194,9 +205,9 @@ Widget organizationsCard({
               SizedBox(
                 width: 75,
                 child: customText(
-                  text: totalManagers,
-                  textColor: name !=
-                          organizationController.selectedOrganizationModel.name
+                  text: email,
+                  textColor: email !=
+                          userDataController.selectedUserModel.email
                       ? Colors.grey
                       : white,
                   fontSize: 14,
@@ -206,8 +217,8 @@ Widget organizationsCard({
                 width: 100,
                 child: customText(
                   text: dateAdded,
-                  textColor: name !=
-                          organizationController.selectedOrganizationModel.name
+                  textColor: email !=
+                          userDataController.selectedUserModel.email
                       ? Colors.grey
                       : white,
                   fontSize: 14,
