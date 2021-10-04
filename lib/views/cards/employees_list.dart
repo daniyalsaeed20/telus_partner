@@ -11,15 +11,18 @@ import 'package:telus_partner_non_responsive/views/cards/leads_tile.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_heading.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_text.dart';
 
-Widget employeesList() {
+Widget employeesList({
+  controller,
+}) {
   return GetBuilder<OrganizationController>(
+    id: 7829,
       init: OrganizationController(),
       builder: (organizationController) {
         return GetBuilder<DbController>(
             init: DbController(),
             builder: (dbController) {
               return Container(
-                height: 600,
+                // height: 600,
                 decoration: BoxDecoration(
                   boxShadow: [
                     BoxShadow(
@@ -34,88 +37,230 @@ Widget employeesList() {
                   ),
                   color: white,
                 ),
-                child: Column(
+                child: Wrap(
+                  // alignment: WrapAlignment.spaceEvenly,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.all(32.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          const SizedBox(
-                            width: 75,
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.grey[400],
+                            width: 1,
                           ),
-                          SizedBox(
-                            width: 175,
-                            child: customHeading(
-                              text: "Name",
-                              fontSize: 14,
-                            ),
+                          borderRadius: BorderRadius.circular(
+                            15,
                           ),
-                          SizedBox(
-                            width: 175,
-                            child: customHeading(
-                              text: "Date Added",
-                              fontSize: 14,
-                            ),
-                          ),
-                          SizedBox(
-                            width: 175,
-                            child: customHeading(
-                              text: "Total Submissions",
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 75,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 500,
-                      child: SingleChildScrollView(
+                          color: white,
+                        ),
+                        width: 650,
                         child: Column(
                           children: [
-                            if (organizationController
-                                    .selectedOrganizationModel.reference !=
-                                null)
-                              PaginateFirestore(
-                                shrinkWrap: true,
-                                // Use SliverAppBar in header to make it sticky
-
-                                // item builder type is compulsory.
-                                itemBuilderType: PaginateBuilderType
-                                    .listView, //Change types accordingly
-                                itemBuilder:
-                                    (index, context, documentSnapshot) {
-                                  UserDataModel userModel = UserDataModel(
-                                    email: documentSnapshot["email"],
-                                    firstName: documentSnapshot["firstName"],
-                                    isAllowed: documentSnapshot["isAllowed"],
-                                    lastName: documentSnapshot["lastName"],
-                                    leadIds: documentSnapshot["leadIds"],
-                                    organization:
-                                        documentSnapshot["organization"],
-                                    password: documentSnapshot["password"],
-                                    dateAdded: documentSnapshot["dateAdded"],
-                                    reference: documentSnapshot.reference,
-                                    type: documentSnapshot["type"],
-                                  );
-
-                                  return userModel.type == "Employee"
-                                      ? employeeListCard(
-                                          userModel,
-                                          controller: dbController,
-                                        )
-                                      : Container();
-                                },
-                                query: dbController.userCollection.where(
-                                    "organization",
-                                    isEqualTo: organizationController
-                                        .selectedOrganizationModel.reference.id
-                                        .toString()),
-                                isLive: true,
+                            Padding(
+                              padding: const EdgeInsets.all(32.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  const SizedBox(
+                                    width: 50,
+                                  ),
+                                  SizedBox(
+                                    width: 130,
+                                    child: customHeading(
+                                      text: "Name",
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 130,
+                                    child: customHeading(
+                                      text: "Date Added",
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 130,
+                                    child: customHeading(
+                                      text: "Submissions",
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 50,
+                                  ),
+                                ],
                               ),
+                            ),
+                            SizedBox(
+                              height: 500,
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    if (organizationController
+                                            .selectedOrganizationModel
+                                            .reference !=
+                                        null)
+                                      PaginateFirestore(
+                                        shrinkWrap: true,
+                                        // Use SliverAppBar in header to make it sticky
+
+                                        // item builder type is compulsory.
+                                        itemBuilderType: PaginateBuilderType
+                                            .listView, //Change types accordingly
+                                        itemBuilder:
+                                            (index, context, documentSnapshot) {
+                                          UserDataModel userModel = UserDataModel(
+                                            email: documentSnapshot["email"],
+                                            firstName:
+                                                documentSnapshot["firstName"],
+                                            isAllowed:
+                                                documentSnapshot["isAllowed"],
+                                            lastName:
+                                                documentSnapshot["lastName"],
+                                            leadIds: documentSnapshot["leadIds"],
+                                            organization:
+                                                documentSnapshot["organization"],
+                                            password:
+                                                documentSnapshot["password"],
+                                            dateAdded:
+                                                documentSnapshot["dateAdded"],
+                                            reference: documentSnapshot.reference,
+                                            type: documentSnapshot["type"],
+                                          );
+
+                                          return userModel.type == "Manager"
+                                              ? employeeListCard(
+                                                  userModel,
+                                                  controller: dbController,
+                                                )
+                                              : Container();
+                                        },
+                                        query: dbController.userCollection.where(
+                                            "organization",
+                                            isEqualTo: organizationController
+                                                .selectedOrganizationModel
+                                                .reference
+                                                .id
+                                                .toString()),
+                                        isLive: true,
+                                        
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.grey[400],
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            15,
+                          ),
+                          color: white,
+                        ),
+                        width: 650,
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(32.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  const SizedBox(
+                                    width: 50,
+                                  ),
+                                  SizedBox(
+                                    width: 130,
+                                    child: customHeading(
+                                      text: "Name",
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 130,
+                                    child: customHeading(
+                                      text: "Date Added",
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 130,
+                                    child: customHeading(
+                                      text: "Submissions",
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 50,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 500,
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    if (organizationController
+                                            .selectedOrganizationModel
+                                            .reference !=
+                                        null)
+                                      PaginateFirestore(
+                                        shrinkWrap: true,
+                                        // Use SliverAppBar in header to make it sticky
+
+                                        // item builder type is compulsory.
+                                        itemBuilderType: PaginateBuilderType
+                                            .listView, //Change types accordingly
+                                        itemBuilder:
+                                            (index, context, documentSnapshot) {
+                                          UserDataModel userModel = UserDataModel(
+                                            email: documentSnapshot["email"],
+                                            firstName:
+                                                documentSnapshot["firstName"],
+                                            isAllowed:
+                                                documentSnapshot["isAllowed"],
+                                            lastName:
+                                                documentSnapshot["lastName"],
+                                            leadIds: documentSnapshot["leadIds"],
+                                            organization:
+                                                documentSnapshot["organization"],
+                                            password:
+                                                documentSnapshot["password"],
+                                            dateAdded:
+                                                documentSnapshot["dateAdded"],
+                                            reference: documentSnapshot.reference,
+                                            type: documentSnapshot["type"],
+                                          );
+
+                                          return userModel.type == "Employee"
+                                              ? employeeListCard(
+                                                  userModel,
+                                                  controller: dbController,
+                                                )
+                                              : Container();
+                                        },
+                                        query: dbController.userCollection.where(
+                                            "organization",
+                                            isEqualTo: organizationController
+                                                .selectedOrganizationModel
+                                                .reference
+                                                .id
+                                                .toString()),
+                                        isLive: true,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -140,7 +285,7 @@ Widget employeeListCard(UserDataModel userModel, {controller}) {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             const SizedBox(
-              width: 75,
+              width: 50,
               child: CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.transparent,
@@ -150,28 +295,28 @@ Widget employeeListCard(UserDataModel userModel, {controller}) {
               ),
             ),
             SizedBox(
-              width: 175,
+              width: 130,
               child: customText(
                 fontSize: 14,
                 text: userModel.firstName + " " + userModel.lastName,
               ),
             ),
             SizedBox(
-              width: 175,
+              width: 130,
               child: customText(
                 fontSize: 14,
                 text: userModel.dateAdded,
               ),
             ),
             SizedBox(
-              width: 175,
+              width: 130,
               child: customText(
                 fontSize: 14,
                 text: userModel.leadIds.toString(),
               ),
             ),
             SizedBox(
-              width: 75,
+              width: 50,
               child: InkWell(
                 onTap: () {
                   Get.dialog(

@@ -17,7 +17,7 @@ Widget leadTile({
   portingInfoModel,
   date = "17/11/2021",
   time = "04:12:33",
-  color = const Color(0xFFAAAAAA),
+  color = const Color(0xFF36a334),
   status = "status",
   partnerCompanyName = "...",
   representativeName = "...",
@@ -65,23 +65,14 @@ Widget leadTile({
             ),
             SizedBox(
               width: 200,
-              child: InkWell(
-                onTap: changeStatusFunction,
-                child: statusIcon(
-                  color: color,
-                  status: status,
-                ),
+              child: statusIcon(
+                color: color,
+                status: status,
               ),
             ),
+            
             SizedBox(
               width: 200,
-              child: statusIcon(
-                color: Color(0xFFBDBDBD),
-                status: "View Details",
-              ),
-            ),
-            SizedBox(
-              width: 10,
               child: InkWell(
                 onTap: () {
                   Get.dialog(
@@ -1097,10 +1088,21 @@ Widget leadTile({
                     ),
                   );
                 },
+                
+                child: statusIcon(
+                color: Color(0xFFBDBDBD),
+                status: "View Details",
+              ),
+              ),
+            ),
+            SizedBox(
+              width: 10,
+              child: InkWell(
+                onTap: changeStatusFunction,
                 child: Icon(
-                  Icons.more_vert,
-                  color: Color(0xFF8392AB),
-                ),
+                    Icons.more_vert,
+                    color: Color(0xFF8392AB),
+                  ),
               ),
             ),
           ],

@@ -21,6 +21,7 @@ import 'package:telus_partner_non_responsive/views/cards/admin_cards/request_lis
 import 'package:telus_partner_non_responsive/views/cards/employees_list.dart';
 import 'package:telus_partner_non_responsive/views/cards/leads_tile.dart';
 import 'package:telus_partner_non_responsive/views/cards/profile_home_card.dart';
+import 'package:telus_partner_non_responsive/views/cards/settings_card.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_heading.dart';
 
 class AdminHomePage extends StatefulWidget {
@@ -137,35 +138,42 @@ class _AdminHomePageState extends State<AdminHomePage> {
   }
 
   Widget organizationsTab(Size size, BuildContext context) {
-    DbController dbController = Get.put(DbController());
-    return GetBuilder<OrganizationController>(
-        init: OrganizationController(),
-        builder: (organizationController) {
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              height: Get.height,
-              width: Get.width,
-              child: SingleChildScrollView(
-                child: Wrap(
-                  alignment: WrapAlignment.center,
-                  children: [
-                    profileHomeCard(),
-                    organizationsListCard(),
-                    organizationSummaryCard(),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 32,
-                        horizontal: 32,
+    return GetBuilder<DbController>(
+      init: DbController(),
+      builder: (dbController) {
+        return GetBuilder<OrganizationController>(
+          init: OrganizationController(),
+          builder: (organizationController) {
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                height: Get.height,
+                width: Get.width,
+                child: SingleChildScrollView(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    children: [
+                      profileHomeCard(),
+                      organizationsListCard(),
+                      organizationSummaryCard(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          // vertical: 32,
+                          horizontal: 32,
+                        ),
+                        child: employeesList(
+                          controller: dbController,
+                        ),
                       ),
-                      child: employeesList(),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        });
+            );
+          },
+        );
+      },
+    );
   }
 
   Widget manageTab(Size size, BuildContext context) {
@@ -183,66 +191,54 @@ class _AdminHomePageState extends State<AdminHomePage> {
             profileHomeCard(),
             Padding(
               padding: const EdgeInsets.all(24.0),
-              child: Container(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: SizedBox(
-                    height: 570,
-                    child: SingleChildScrollView(
-                      child: Wrap(
-                        alignment: WrapAlignment.center,
-                        children: [
-                          addOrganizationCard(function: () {
-                            organizationController.addOrganization();
-                            organizationController.clearFields();
-                          }),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: requestListCard(),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                              constraints: const BoxConstraints(maxWidth: 409),
-                              child: GetBuilder<UserDataController>(
-                                  init: UserDataController(),
-                                  builder: (userDataController) {
-                                    return addEmployeeCard(
-                                        text: "Add Employee",
-                                        function: () {
-                                          EmployeeController
-                                              employeeController =
-                                              Get.put(EmployeeController());
-                                          employeeController.saveEmployee(
-                                            type: userDataController
-                                                .selectedUserType,
-                                          );
-                                          if (userDataController
-                                                  .selectedUserModel
-                                                  .reference !=
-                                              null) {
-                                            dbController.deleteEmployee(
-                                                userDataController
-                                                    .selectedUserModel);
-                                          }
-                                          UserDataController.clearFields();
-                                          userDataController.selectedUserType =
-                                              "";
-                                          organizationController
-                                                  .selectedOrganizationModel =
-                                              OrganizationModel();
-                                          userDataController.update();
-                                        });
-                                  }),
-                            ),
-                          ),
-                          organizationsListCard(
-                            leadsRequired: false,
-                          )
-                        ],
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  children: [
+                    addOrganizationCard(function: () {
+                      organizationController.addOrganization();
+                      organizationController.clearFields();
+                    }),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: requestListCard(),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 409),
+                        child: GetBuilder<UserDataController>(
+                            init: UserDataController(),
+                            builder: (userDataController) {
+                              return addEmployeeCard(
+                                  text: "Add Employee",
+                                  function: () {
+                                    EmployeeController employeeController =
+                                        Get.put(EmployeeController());
+                                    employeeController.saveEmployee(
+                                      type: userDataController.selectedUserType,
+                                    );
+                                    if (userDataController
+                                            .selectedUserModel.reference !=
+                                        null) {
+                                      dbController.deleteEmployee(
+                                          userDataController.selectedUserModel);
+                                    }
+                                    UserDataController.clearFields();
+                                    userDataController.selectedUserType = "";
+                                    organizationController
+                                            .selectedOrganizationModel =
+                                        OrganizationModel();
+                                    userDataController.update();
+                                  });
+                            }),
                       ),
                     ),
-                  ),
+                    organizationsListCard(
+                      leadsRequired: false,
+                    )
+                  ],
                 ),
               ),
             ),
@@ -254,7 +250,6 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
   Widget leadsTab(Size size, BuildContext context) {
     DbController dbController = Get.put(DbController());
-    UserDataController userDataController = Get.put(UserDataController());
     return Container(
       color: backgroundColor,
       height: Get.height,
@@ -266,6 +261,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Container(
+                constraints: const BoxConstraints(
+                  minHeight: 570,
+                ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15),
                   color: white,
@@ -280,232 +278,208 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: SizedBox(
-                    height: 570,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          Row(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: 16,
+                                bottom: 48,
+                              ),
+                              child: customHeading(
+                                text: "Leads History",
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Divider(
+                            height: 1,
+                            color: greenLight,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 32),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 16,
-                                  bottom: 48,
-                                ),
-                                child: customHeading(
-                                  text: "Leads History",
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              SizedBox(
+                                width: 200,
+                                child: customHeading(text: "Title"),
+                              ),
+                              SizedBox(
+                                width: 200,
+                                child: customHeading(text: "Submission Date"),
+                              ),
+                              SizedBox(
+                                width: 200,
+                                child: customHeading(text: "Submission Time"),
+                              ),
+                              SizedBox(
+                                width: 200,
+                                child: customHeading(text: "Status"),
+                              ),
+                              const SizedBox(
+                                width: 200,
+                              ),
+                              const SizedBox(
+                                width: 10,
                               ),
                             ],
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Divider(
-                              height: 1,
-                              color: greenLight,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 32),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                SizedBox(
-                                  width: 200,
-                                  child: customHeading(text: "Title"),
-                                ),
-                                SizedBox(
-                                  width: 200,
-                                  child: customHeading(text: "Submission Date"),
-                                ),
-                                SizedBox(
-                                  width: 200,
-                                  child: customHeading(text: "Submission Time"),
-                                ),
-                                SizedBox(
-                                  width: 200,
-                                  child: customHeading(text: "Status"),
-                                ),
-                                const SizedBox(
-                                  width: 200,
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                              ],
-                            ),
-                          ),
-                          PaginateFirestore(
-                            shrinkWrap: true,
-                            // Use SliverAppBar in header to make it sticky
+                        ),
+                        PaginateFirestore(
+                          shrinkWrap: true,
+                          // Use SliverAppBar in header to make it sticky
 
-                            // item builder type is compulsory.
-                            itemBuilderType: PaginateBuilderType
-                                .listView, //Change types accordingly
-                            itemBuilder: (index, context, documentSnapshot) {
-                              Leads lead =
-                                  Leads.fromDocumentSnapshot(documentSnapshot);
+                          // item builder type is compulsory.
+                          itemBuilderType: PaginateBuilderType
+                              .listView, //Change types accordingly
+                          itemBuilder: (index, context, documentSnapshot) {
+                            Leads lead =
+                                Leads.fromDocumentSnapshot(documentSnapshot);
 
-                              return lead.status != "Completed"
-                                  ? leadTile(
-                                      status: lead.status,
-                                      date: lead.date,
-                                      time: lead.time,
-                                      clientName: lead.customerName,
-                                      additionalInfo:
-                                          lead.customerPackageDetails,
-                                      clientEmail: lead.customerEmail,
-                                      employeeEmail: lead.employeeId,
-                                      employeeName: lead.representativeName,
-                                      portingInfoModel: lead.portingRequests,
-                                      address: lead.customerAddress,
-                                      city: lead.customerCity,
-                                      customerContactPhoneNumber:
-                                          lead.customerContactPhoneNumber,
-                                      customerInterestOpportunity:
-                                          lead.customerInterestOpportunity,
-                                      customerName: lead.customerName,
-                                      dob: lead.customerDateOfBirth,
-                                      email: lead.customerEmail,
-                                      hst: lead.customerBusinessHST,
-                                      packageDetails:
-                                          lead.customerPackageDetails,
-                                      partnerCompanyName:
-                                          lead.partnerCompanyName,
-                                      personalInfo:
-                                          lead.customerPersonalInformation,
-                                      postalCode: lead.customerPostalCode,
-                                      province: lead.customerProvince,
-                                      representativeName:
-                                          lead.representativeName,
-                                      representativePhoneNumber:
-                                          lead.representativePhoneNumber,
-                                      changeStatusFunction: () {
-                                        UserDataController userDataController =
-                                            Get.put(UserDataController());
+                            return leadTile(
+                              status: lead.status,
+                              date: lead.date,
+                              time: lead.time,
+                              clientName: lead.customerName,
+                              additionalInfo: lead.customerPackageDetails,
+                              clientEmail: lead.customerEmail,
+                              employeeEmail: lead.employeeId,
+                              employeeName: lead.representativeName,
+                              portingInfoModel: lead.portingRequests,
+                              address: lead.customerAddress,
+                              city: lead.customerCity,
+                              customerContactPhoneNumber:
+                                  lead.customerContactPhoneNumber,
+                              customerInterestOpportunity:
+                                  lead.customerInterestOpportunity,
+                              customerName: lead.customerName,
+                              dob: lead.customerDateOfBirth,
+                              email: lead.customerEmail,
+                              hst: lead.customerBusinessHST,
+                              packageDetails: lead.customerPackageDetails,
+                              partnerCompanyName: lead.partnerCompanyName,
+                              personalInfo: lead.customerPersonalInformation,
+                              postalCode: lead.customerPostalCode,
+                              province: lead.customerProvince,
+                              representativeName: lead.representativeName,
+                              representativePhoneNumber:
+                                  lead.representativePhoneNumber,
+                              changeStatusFunction: () {
+                                UserDataController userDataController =
+                                    Get.put(UserDataController());
 
-                                        if (userDataController
-                                                .userDataModel.type ==
-                                            "Admin") {
-                                          Get.dialog(
-                                            AlertDialog(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(15),
-                                              ),
-                                              contentPadding:
-                                                  const EdgeInsets.symmetric(
-                                                horizontal: 48,
-                                                vertical: 48,
-                                              ),
-                                              insetPadding:
-                                                  const EdgeInsets.symmetric(
-                                                horizontal: 20,
-                                                vertical: 48,
-                                              ),
-                                              backgroundColor:
-                                                  Colors.black.withOpacity(0.5),
-                                              content: SizedBox(
-                                                height: 200,
-                                                width: 500,
-                                                child: Column(
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              16),
-                                                      child: Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          customHeading(
-                                                            text:
-                                                                "Change Status",
-                                                            headingColor: white,
-                                                            fontSize: 20,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    Wrap(
-                                                      alignment:
-                                                          WrapAlignment.center,
-                                                      runSpacing: 25,
-                                                      spacing: 25,
-                                                      children: [
-                                                        InkWell(
-                                                          onTap: () {
-                                                            dbController
-                                                                .changeLeadStatus(
-                                                                    "Completed",
-                                                                    lead);
-                                                            Get.back();
-                                                          },
-                                                          child: Container(
-                                                            height: 75,
-                                                            width: 75,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          90),
-                                                              color: white,
-                                                            ),
-                                                            child: Icon(
-                                                              Icons.check,
-                                                              color: green,
-                                                              size: 50,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        InkWell(
-                                                          onTap: () {
-                                                            dbController
-                                                                .changeLeadStatus(
-                                                                    "Canceled",
-                                                                    lead);
-                                                            Get.back();
-                                                          },
-                                                          child: Container(
-                                                            height: 75,
-                                                            width: 75,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          90),
-                                                              color: white,
-                                                            ),
-                                                            child: const Icon(
-                                                              Icons.close,
-                                                              color: red,
-                                                              size: 50,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    )
-                                                  ],
-                                                ),
+                                if (userDataController.userDataModel.type ==
+                                    "Admin") {
+                                  Get.dialog(
+                                    AlertDialog(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 48,
+                                        vertical: 48,
+                                      ),
+                                      insetPadding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 48,
+                                      ),
+                                      backgroundColor:
+                                          Colors.black.withOpacity(0.5),
+                                      content: SizedBox(
+                                        height: 200,
+                                        width: 500,
+                                        child: Column(
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.all(16),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  customHeading(
+                                                    text: "Change Status",
+                                                    headingColor: white,
+                                                    fontSize: 20,
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                          );
-                                        }
-                                      },
-                                    )
-                                  : const SizedBox();
-                            },
-                            query: dbController.leadsCollection
-                                .orderBy("date", descending: true),
-                            isLive: true,
-                          ),
-                        ],
-                      ),
+                                            Wrap(
+                                              alignment: WrapAlignment.center,
+                                              runSpacing: 25,
+                                              spacing: 25,
+                                              children: [
+                                                InkWell(
+                                                  onTap: () {
+                                                    dbController
+                                                        .changeLeadStatus(
+                                                            "Completed", lead);
+                                                    Get.back();
+                                                  },
+                                                  child: Container(
+                                                    height: 75,
+                                                    width: 75,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              90),
+                                                      color: white,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.check,
+                                                      color: green,
+                                                      size: 50,
+                                                    ),
+                                                  ),
+                                                ),
+                                                InkWell(
+                                                  onTap: () {
+                                                    dbController
+                                                        .changeLeadStatus(
+                                                            "Canceled", lead);
+                                                    Get.back();
+                                                  },
+                                                  child: Container(
+                                                    height: 75,
+                                                    width: 75,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              90),
+                                                      color: white,
+                                                    ),
+                                                    child: const Icon(
+                                                      Icons.close,
+                                                      color: red,
+                                                      size: 50,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                            );
+                          },
+                          query: dbController.leadsCollection
+                              .orderBy("date", descending: true),
+                          isLive: true,
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -518,8 +492,26 @@ class _AdminHomePageState extends State<AdminHomePage> {
   }
 
   Widget settingsTab(Size size, BuildContext context) {
-    return Container(
-      color: Colors.blue,
+    return GetBuilder<DbController>(
+      init: DbController(),
+      builder: (dbController) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            height: Get.height,
+            width: Get.width,
+            child: SingleChildScrollView(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                children: [
+                  profileHomeCard(),
+                  settingsCard(),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

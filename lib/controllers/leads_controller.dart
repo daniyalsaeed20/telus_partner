@@ -92,6 +92,20 @@ class LeadsController extends GetxController {
     portingRequestDeviceNameController.add(TextEditingController(text: ""));
   }
 
+  removePortingRequesstFields() {
+    portingRequestNameController.removeLast();
+    portingRequestPhoneNumberController.removeLast();
+    portingRequestCurrentServiceProviderController
+        .removeLast();
+    portingRequestAccountNumberController.removeLast();
+    portingRequestAdditionalInfoController.removeLast();
+    portingRequestCommunicateWithController
+        .removeLast();
+    portingRequestDeviceNameController.removeLast();
+    portingInfoCount = portingInfoCount - 1;
+    update();
+  }
+
   clearFields() {
     customerAddressController.text = "";
     customerNameController.text = "";

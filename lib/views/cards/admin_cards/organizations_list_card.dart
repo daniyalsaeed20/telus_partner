@@ -120,7 +120,9 @@ Widget organizationsListCard({
                                             if(leadsRequired == true){
                                               organizationController.getOrganizationLeads();
                                             }
+                                            dbController.update();
                                         organizationController.update();
+                                        organizationController.update([7829], true);
                                       },
                                       child: organizationsCard(
                                         name: organizationModel.name,

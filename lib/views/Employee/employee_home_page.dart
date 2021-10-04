@@ -19,6 +19,7 @@ import 'package:telus_partner_non_responsive/views/cards/employee_cards/lead_car
 import 'package:telus_partner_non_responsive/views/cards/leads_tile.dart';
 import 'package:telus_partner_non_responsive/views/cards/porting_info_card.dart';
 import 'package:telus_partner_non_responsive/views/cards/profile_home_card.dart';
+import 'package:telus_partner_non_responsive/views/cards/settings_card.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_button.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_heading.dart';
 import 'package:telus_partner_non_responsive/views/widgets/custom_text_field.dart';
@@ -896,8 +897,26 @@ class _EmployeeHomePageState extends State<EmployeeHomePage> {
   }
 
   Widget settingsTab(Size size, BuildContext context) {
-    return Container(
-      color: Colors.blue,
+    return GetBuilder<DbController>(
+      init: DbController(),
+      builder: (dbController) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            height: Get.height,
+            width: Get.width,
+            child: SingleChildScrollView(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                children: [
+                  profileHomeCard(),
+                  settingsCard(),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

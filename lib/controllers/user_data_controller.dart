@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:firebase/firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:telus_partner_non_responsive/models/user_data_model.dart';
@@ -27,6 +28,15 @@ class UserDataController extends GetxController {
   static TextEditingController passwordController = TextEditingController();
   static TextEditingController agencyController = TextEditingController();
   static TextEditingController userTypeController = TextEditingController();
+
+  /* -------------------------------- Settings -------------------------------- */
+
+  static TextEditingController newEmail1Controller = TextEditingController();
+  static TextEditingController newPassword1Controller = TextEditingController();
+  static TextEditingController newEmail2Controller = TextEditingController();
+  static TextEditingController newPassword2Controller = TextEditingController();
+  static TextEditingController newEmailController = TextEditingController();
+  static TextEditingController newPasswordController = TextEditingController();
 
   UserDataModel userDataModel = UserDataModel();
   UserDataModel selectedEmployee = UserDataModel();

@@ -37,3 +37,16 @@ Widget addPortingReuestButton({
     ),
   );
 }
+
+Widget removePortingReuestButton({
+  function,
+}) {
+  return InkWell(
+    onTap: function,
+    child: Icon(
+        Icons.remove_circle_outline_outlined,
+        color: purple,
+        size: 85,
+      ),
+  );
+}
