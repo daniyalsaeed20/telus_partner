@@ -37,7 +37,14 @@ Widget portingInfoCard(int index) {
             child: Column(
               children: [
                 Padding(
-                  padding: index == leadsController.portingInfoCount - 1 ? const EdgeInsets.only(left: 8, top:8, bottom:8, right:96,):const EdgeInsets.all(8.0),
+                  padding: index == leadsController.portingInfoCount - 1
+                      ? const EdgeInsets.only(
+                          left: 8,
+                          top: 8,
+                          bottom: 8,
+                          right: 96,
+                        )
+                      : const EdgeInsets.all(8.0),
                   child: customInputTextfield(
                     validator: fieldValidator,
                     controller:
@@ -46,7 +53,14 @@ Widget portingInfoCard(int index) {
                   ),
                 ),
                 Padding(
-                  padding: index == leadsController.portingInfoCount - 1 ? const EdgeInsets.only(left: 8, top:8, bottom:8, right:96,):const EdgeInsets.all(8.0),
+                  padding: index == leadsController.portingInfoCount - 1
+                      ? const EdgeInsets.only(
+                          left: 8,
+                          top: 8,
+                          bottom: 8,
+                          right: 96,
+                        )
+                      : const EdgeInsets.all(8.0),
                   child: customInputTextfield(
                     validator: fieldValidator,
                     controller: leadsController
