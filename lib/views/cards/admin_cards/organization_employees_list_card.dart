@@ -12,7 +12,7 @@ import 'package:telus_partner_non_responsive/views/widgets/custom_text.dart';
 Widget organizationEmployeesListCard() {
   DbController dbController = Get.put(DbController());
   OrganizationController organizationController =
-      Get.put(OrganizationController());
+      Get.put(OrganizationController());jhfdjfhgvfhtf
   UserDataController userDataController = Get.put(UserDataController());
   return Padding(
     padding: const EdgeInsets.all(16),
