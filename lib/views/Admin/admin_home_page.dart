@@ -9,15 +9,19 @@ import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:telus_partner_non_responsive/constants/colors.dart';
 import 'package:telus_partner_non_responsive/controllers/db_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/employee_controller.dart';
+import 'package:telus_partner_non_responsive/controllers/leads_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/organization_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/user_data_controller.dart';
 import 'package:telus_partner_non_responsive/models/leads/leads_model.dart';
+import 'package:telus_partner_non_responsive/models/notifications_model.dart';
 import 'package:telus_partner_non_responsive/models/organization_model.dart';
+import 'package:telus_partner_non_responsive/views/Admin/notification_card.dart';
 import 'package:telus_partner_non_responsive/views/cards/add_employee_card.dart';
 import 'package:telus_partner_non_responsive/views/cards/add_organization.dart';
 import 'package:telus_partner_non_responsive/views/cards/admin_cards/organization_summary_card.dart';
 import 'package:telus_partner_non_responsive/views/cards/admin_cards/organizations_list_card.dart';
 import 'package:telus_partner_non_responsive/views/cards/admin_cards/request_list_card.dart';
+import 'package:telus_partner_non_responsive/views/cards/employee_cards/lead_card.dart';
 import 'package:telus_partner_non_responsive/views/cards/employees_list.dart';
 import 'package:telus_partner_non_responsive/views/cards/leads_tile.dart';
 import 'package:telus_partner_non_responsive/views/cards/profile_home_card.dart';
@@ -37,6 +41,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   void initState() {
     super.initState();
     _items = _generateItems;
+
     // EmployeeController.selectedTab = int.parse(_items.firstWhere((item) => item.isSelected).text);
   }
 
@@ -46,19 +51,28 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
     return [
       CollapsibleItem(
-        text: 'Organizations',
-        icon: Icons.business_center_outlined,
+        text: 'Home',
+        icon: Icons.home_outlined,
         onPressed: () {
+          dbController.getAdminLeads();
           UserDataController.selectedTab = 0;
           userDataController.update();
         },
         isSelected: true,
       ),
       CollapsibleItem(
+        text: 'Organizations',
+        icon: Icons.business_center_outlined,
+        onPressed: () {
+          UserDataController.selectedTab = 1;
+          userDataController.update();
+        },
+      ),
+      CollapsibleItem(
         text: 'Manage',
         icon: Icons.manage_accounts_outlined,
         onPressed: () {
-          UserDataController.selectedTab = 1;
+          UserDataController.selectedTab = 2;
           dbController.getOrganizationLeads();
           // dbController.getEmployeeLeads();
           userDataController.update();
@@ -68,7 +82,23 @@ class _AdminHomePageState extends State<AdminHomePage> {
         text: 'Leads',
         icon: Icons.leaderboard_sharp,
         onPressed: () {
-          UserDataController.selectedTab = 2;
+          UserDataController.selectedTab = 3;
+          userDataController.update();
+        },
+      ),
+      CollapsibleItem(
+        text: 'Leads Notifications',
+        icon: Icons.edit_notifications_outlined,
+        onPressed: () {
+          UserDataController.selectedTab = 4;
+          userDataController.update();
+        },
+      ),
+      CollapsibleItem(
+        text: 'General',
+        icon: Icons.notification_add_outlined,
+        onPressed: () {
+          UserDataController.selectedTab = 5;
           userDataController.update();
         },
       ),
@@ -76,7 +106,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
         text: 'Settings',
         icon: Icons.settings,
         onPressed: () {
-          UserDataController.selectedTab = 3;
+          UserDataController.selectedTab = 6;
           userDataController.update();
         },
       ),
@@ -125,12 +155,447 @@ class _AdminHomePageState extends State<AdminHomePage> {
               ),
             ],
             body: UserDataController.selectedTab == 0
-                ? organizationsTab(Get.size, context)
+                ? homeTab(Get.size, context)
                 : UserDataController.selectedTab == 1
-                    ? manageTab(Get.size, context)
+                    ? organizationsTab(Get.size, context)
                     : UserDataController.selectedTab == 2
-                        ? leadsTab(Get.size, context)
-                        : settingsTab(Get.size, context),
+                        ? manageTab(Get.size, context)
+                        : UserDataController.selectedTab == 3
+                            ? leadsTab(Get.size, context)
+                            : UserDataController.selectedTab == 4
+                                ? leadsNotificationTab(Get.size, context)
+                                : UserDataController.selectedTab == 5
+                                    ? generalNotificationTab(Get.size, context)
+                                    : settingsTab(Get.size, context),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget homeTab(Size size, BuildContext context) {
+    return GetBuilder<DbController>(
+      init: DbController(),
+      builder: (dbController) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            height: Get.height,
+            width: Get.width,
+            child: SingleChildScrollView(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                children: [
+                  profileHomeCard(),
+                  GetBuilder<LeadsController>(
+                      init: LeadsController(),
+                      builder: (leadsController) {
+                        return Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              color: white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 5,
+                                  spreadRadius: 0.1,
+                                  offset: const Offset(0, 0),
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          top: 16,
+                                          bottom: 48,
+                                        ),
+                                        child: customHeading(
+                                          text: "Leads Summary",
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Divider(
+                                      height: 1,
+                                      color: greenLight,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 128),
+                                    child: Wrap(
+                                      // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      alignment: WrapAlignment.center,
+                                      runSpacing: 70,
+                                      spacing: 70,
+                                      children: [
+                                        leadCard(
+                                          color: greenLight,
+                                          headingText: "Approved",
+                                          text: leadsController
+                                                      .adminApprovedLeads ==
+                                                  null
+                                              ? "0"
+                                              : leadsController
+                                                  .adminApprovedLeads
+                                                  .toString(),
+                                          icon: Icons.check,
+                                          labelText: "Leads Approved",
+                                        ),
+                                        leadCard(
+                                          color: orange,
+                                          headingText: "Pending",
+                                          text: leadsController
+                                                      .adminPendingLeads ==
+                                                  null
+                                              ? "0"
+                                              : leadsController
+                                                  .adminPendingLeads
+                                                  .toString(),
+                                          icon: Icons.menu,
+                                          labelText: "Leads Pending",
+                                        ),
+                                        leadCard(
+                                          color: red,
+                                          headingText: "Canceled",
+                                          text: leadsController
+                                                      .adminCanceledLeads ==
+                                                  null
+                                              ? "0"
+                                              : leadsController
+                                                  .adminCanceledLeads
+                                                  .toString(),
+                                          icon: Icons.close,
+                                          labelText: "Leads Canceled",
+                                        ),
+                                        leadCard(
+                                          color: purpleDark,
+                                          headingText: "All",
+                                          text: (leadsController
+                                                          .adminApprovedLeads ==
+                                                      null
+                                                  ? 0
+                                                  : leadsController
+                                                                  .adminApprovedLeads +
+                                                              leadsController
+                                                                  .adminPendingLeads ==
+                                                          null
+                                                      ? 0
+                                                      : leadsController
+                                                                      .adminPendingLeads +
+                                                                  leadsController
+                                                                      .adminCanceledLeads ==
+                                                              null
+                                                          ? 0
+                                                          : leadsController
+                                                              .adminCanceledLeads)
+                                              .toString(),
+                                          icon: Icons.code,
+                                          labelText: "All Leads",
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Container(
+                      constraints: const BoxConstraints(
+                        minHeight: 570,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        color: white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 5,
+                            spreadRadius: 0.1,
+                            offset: const Offset(0, 0),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 16,
+                                      bottom: 48,
+                                    ),
+                                    child: customHeading(
+                                      text: "Recent Submissions",
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  InkWell(
+                                    onTap: () {
+                                      UserDataController userDataController =
+                                          Get.put(UserDataController());
+                                      UserDataController.selectedTab = 3;
+                                      userDataController.update();
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                        top: 16,
+                                        bottom: 48,
+                                      ),
+                                      child: customHeading(
+                                        text: "> View All Leads",
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        headingColor: Colors.grey[400],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Divider(
+                                  height: 1,
+                                  color: greenLight,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 32),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    SizedBox(
+                                      width: 200,
+                                      child: customHeading(text: "Title"),
+                                    ),
+                                    SizedBox(
+                                      width: 200,
+                                      child: customHeading(
+                                          text: "Submission Date"),
+                                    ),
+                                    SizedBox(
+                                      width: 200,
+                                      child: customHeading(
+                                          text: "Submission Time"),
+                                    ),
+                                    SizedBox(
+                                      width: 200,
+                                      child: customHeading(text: "Status"),
+                                    ),
+                                    const SizedBox(
+                                      width: 200,
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              PaginateFirestore(
+                                shrinkWrap: true,
+                                // Use SliverAppBar in header to make it sticky
+
+                                // item builder type is compulsory.
+                                itemBuilderType: PaginateBuilderType
+                                    .listView, //Change types accordingly
+                                itemBuilder:
+                                    (index, context, documentSnapshot) {
+                                  Leads lead = Leads.fromDocumentSnapshot(
+                                      documentSnapshot);
+
+                                  return index < 5
+                                      ? leadTile(
+                                          status: lead.status,
+                                          date: lead.date,
+                                          time: lead.time,
+                                          clientName: lead.customerName,
+                                          additionalInfo:
+                                              lead.customerPackageDetails,
+                                          clientEmail: lead.customerEmail,
+                                          employeeEmail: lead.employeeId,
+                                          employeeName: lead.representativeName,
+                                          portingInfoModel:
+                                              lead.portingRequests,
+                                          address: lead.customerAddress,
+                                          city: lead.customerCity,
+                                          customerContactPhoneNumber:
+                                              lead.customerContactPhoneNumber,
+                                          customerInterestOpportunity:
+                                              lead.customerInterestOpportunity,
+                                          customerName: lead.customerName,
+                                          dob: lead.customerDateOfBirth,
+                                          email: lead.customerEmail,
+                                          hst: lead.customerBusinessHST,
+                                          packageDetails:
+                                              lead.customerPackageDetails,
+                                          partnerCompanyName:
+                                              lead.partnerCompanyName,
+                                          personalInfo:
+                                              lead.customerPersonalInformation,
+                                          postalCode: lead.customerPostalCode,
+                                          province: lead.customerProvince,
+                                          representativeName:
+                                              lead.representativeName,
+                                          representativePhoneNumber:
+                                              lead.representativePhoneNumber,
+                                          changeStatusFunction: () {
+                                            UserDataController
+                                                userDataController =
+                                                Get.put(UserDataController());
+
+                                            if (userDataController
+                                                    .userDataModel.type ==
+                                                "Admin") {
+                                              Get.dialog(
+                                                AlertDialog(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            15),
+                                                  ),
+                                                  contentPadding:
+                                                      const EdgeInsets
+                                                          .symmetric(
+                                                    horizontal: 48,
+                                                    vertical: 48,
+                                                  ),
+                                                  insetPadding: const EdgeInsets
+                                                      .symmetric(
+                                                    horizontal: 20,
+                                                    vertical: 48,
+                                                  ),
+                                                  backgroundColor: Colors.black
+                                                      .withOpacity(0.5),
+                                                  content: SizedBox(
+                                                    height: 200,
+                                                    width: 500,
+                                                    child: Column(
+                                                      children: [
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(16),
+                                                          child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            children: [
+                                                              customHeading(
+                                                                text:
+                                                                    "Change Status",
+                                                                headingColor:
+                                                                    white,
+                                                                fontSize: 20,
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        Wrap(
+                                                          alignment:
+                                                              WrapAlignment
+                                                                  .center,
+                                                          runSpacing: 25,
+                                                          spacing: 25,
+                                                          children: [
+                                                            InkWell(
+                                                              onTap: () {
+                                                                dbController
+                                                                    .changeLeadStatus(
+                                                                        "Completed",
+                                                                        lead);
+                                                                Get.back();
+                                                              },
+                                                              child: Container(
+                                                                height: 75,
+                                                                width: 75,
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              90),
+                                                                  color: white,
+                                                                ),
+                                                                child: Icon(
+                                                                  Icons.check,
+                                                                  color: green,
+                                                                  size: 50,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            InkWell(
+                                                              onTap: () {
+                                                                dbController
+                                                                    .changeLeadStatus(
+                                                                        "Canceled",
+                                                                        lead);
+                                                                Get.back();
+                                                              },
+                                                              child: Container(
+                                                                height: 75,
+                                                                width: 75,
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              90),
+                                                                  color: white,
+                                                                ),
+                                                                child:
+                                                                    const Icon(
+                                                                  Icons.close,
+                                                                  color: red,
+                                                                  size: 50,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        )
+                                      : Container();
+                                },
+                                query: dbController.leadsCollection
+                                    .orderBy("date", descending: true),
+                                isLive: true,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },
@@ -138,6 +603,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   }
 
   Widget organizationsTab(Size size, BuildContext context) {
+    UserDataController userDataController = Get.put(UserDataController());
     return GetBuilder<DbController>(
       init: DbController(),
       builder: (dbController) {
@@ -162,7 +628,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                           horizontal: 32,
                         ),
                         child: employeesList(
-                          controller: dbController,
+                          controller: userDataController,
                         ),
                       ),
                     ],
@@ -488,6 +954,204 @@ class _AdminHomePageState extends State<AdminHomePage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget leadsNotificationTab(Size size, BuildContext context) {
+    return GetBuilder<DbController>(
+      init: DbController(),
+      builder: (dbController) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            height: Get.height,
+            width: Get.width,
+            child: SingleChildScrollView(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                children: [
+                  profileHomeCard(),
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Container(
+                      constraints: const BoxConstraints(
+                        minHeight: 570,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        color: white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 5,
+                            spreadRadius: 0.1,
+                            offset: const Offset(0, 0),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Row(
+                                // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 16,
+                                      bottom: 48,
+                                    ),
+                                    child: customHeading(
+                                      text: "Lead Notifications",
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Divider(
+                                  height: 1,
+                                  color: greenLight,
+                                ),
+                              ),
+                              PaginateFirestore(
+                                shrinkWrap: true,
+                                // Use SliverAppBar in header to make it sticky
+
+                                // item builder type is compulsory.
+                                itemBuilderType: PaginateBuilderType
+                                    .listView, //Change types accordingly
+                                itemBuilder:
+                                    (index, context, documentSnapshot) {
+                                  NotificationsModel notificationModel =
+                                      NotificationsModel.fromDocumentSnapshot(
+                                          documentSnapshot);
+
+                                  return notificationCard(
+                                    name: notificationModel.name,
+                                    date: notificationModel.date,
+                                    isLead: notificationModel.isLead,
+                                  );
+                                },
+                                query: dbController.notificationsCollection
+                                    .where("isLead", isEqualTo: true)
+                                    .orderBy("date", descending: true),
+                                isLive: true,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget generalNotificationTab(Size size, BuildContext context) {
+    return GetBuilder<DbController>(
+      init: DbController(),
+      builder: (dbController) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            height: Get.height,
+            width: Get.width,
+            child: SingleChildScrollView(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                children: [
+                  profileHomeCard(),
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Container(
+                      constraints: const BoxConstraints(
+                        minHeight: 570,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        color: white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 5,
+                            spreadRadius: 0.1,
+                            offset: const Offset(0, 0),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Row(
+                                // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 16,
+                                      bottom: 48,
+                                    ),
+                                    child: customHeading(
+                                      text: "General Notifications",
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Divider(
+                                  height: 1,
+                                  color: greenLight,
+                                ),
+                              ),
+                              PaginateFirestore(
+                                shrinkWrap: true,
+                                // Use SliverAppBar in header to make it sticky
+
+                                // item builder type is compulsory.
+                                itemBuilderType: PaginateBuilderType
+                                    .listView, //Change types accordingly
+                                itemBuilder:
+                                    (index, context, documentSnapshot) {
+                                  NotificationsModel notificationModel =
+                                      NotificationsModel.fromDocumentSnapshot(
+                                          documentSnapshot);
+
+                                  return notificationCard(
+                                    name: notificationModel.name,
+                                    date: notificationModel.date,
+                                    isLead: notificationModel.isLead,
+                                  );
+                                },
+                                query: dbController.notificationsCollection
+                                    .where("isLead", isEqualTo: false)
+                                    .orderBy("date", descending: true),
+                                isLive: true,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

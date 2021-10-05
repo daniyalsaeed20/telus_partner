@@ -37,7 +37,7 @@ Widget employeesList({
                   ),
                   color: white,
                 ),
-                child: Wrap(
+                child: controller.userDataModel.type == "Admin" ? Wrap(
                   // alignment: WrapAlignment.spaceEvenly,
                   children: [
                     Padding(
@@ -266,13 +266,121 @@ Widget employeesList({
                       ),
                     ),
                   ],
-                ),
+                ): Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.grey[400],
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            15,
+                          ),
+                          color: white,
+                        ),
+                        width: Get.width,
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(32.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  const SizedBox(
+                                    width: 75,
+                                  ),
+                                  SizedBox(
+                                    width: 200,
+                                    child: customHeading(
+                                      text: "Name",
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 200,
+                                    child: customHeading(
+                                      text: "Date Added",
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 200,
+                                    child: customHeading(
+                                      text: "Submissions",
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 75,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 500,
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    if (organizationController
+                                            .selectedOrganizationModel
+                                            .reference !=
+                                        null || controller.userDataModel.type == "Manager")
+                                      PaginateFirestore(
+                                        shrinkWrap: true,
+                                        // Use SliverAppBar in header to make it sticky
+
+                                        // item builder type is compulsory.
+                                        itemBuilderType: PaginateBuilderType
+                                            .listView, //Change types accordingly
+                                        itemBuilder:
+                                            (index, context, documentSnapshot) {
+                                          UserDataModel userModel = UserDataModel(
+                                            email: documentSnapshot["email"],
+                                            firstName:
+                                                documentSnapshot["firstName"],
+                                            isAllowed:
+                                                documentSnapshot["isAllowed"],
+                                            lastName:
+                                                documentSnapshot["lastName"],
+                                            leadIds: documentSnapshot["leadIds"],
+                                            organization:
+                                                documentSnapshot["organization"],
+                                            password:
+                                                documentSnapshot["password"],
+                                            dateAdded:
+                                                documentSnapshot["dateAdded"],
+                                            reference: documentSnapshot.reference,
+                                            type: documentSnapshot["type"],
+                                          );
+
+                                          return userModel.type == "Employee"
+                                              ? employeeListCard(
+                                                  userModel,
+                                                  controller: dbController,
+                                                )
+                                              : Container();
+                                        },
+                                        query: dbController.userCollection.where(
+                                            "organization",
+                                            isEqualTo: controller.userDataModel.organization),
+                                        isLive: true,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
               );
             });
       });
 }
 
 Widget employeeListCard(UserDataModel userModel, {controller}) {
+  UserDataController userDataController = Get.put(UserDataController());
   return Column(
     children: [
       Padding(
@@ -284,9 +392,9 @@ Widget employeeListCard(UserDataModel userModel, {controller}) {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            const SizedBox(
-              width: 50,
-              child: CircleAvatar(
+            SizedBox(
+              width: userDataController.userDataModel.type == "Admin"? 50 : 75,
+              child: const CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.transparent,
                 backgroundImage: AssetImage(
@@ -295,28 +403,28 @@ Widget employeeListCard(UserDataModel userModel, {controller}) {
               ),
             ),
             SizedBox(
-              width: 130,
+              width: userDataController.userDataModel.type == "Admin"?130:200,
               child: customText(
                 fontSize: 14,
                 text: userModel.firstName + " " + userModel.lastName,
               ),
             ),
             SizedBox(
-              width: 130,
+              width: userDataController.userDataModel.type == "Admin"?130:200,
               child: customText(
                 fontSize: 14,
                 text: userModel.dateAdded,
               ),
             ),
             SizedBox(
-              width: 130,
+              width: userDataController.userDataModel.type == "Admin"?130:200,
               child: customText(
                 fontSize: 14,
                 text: userModel.leadIds.toString(),
               ),
             ),
             SizedBox(
-              width: 50,
+              width: userDataController.userDataModel.type == "Admin"?50:75,
               child: InkWell(
                 onTap: () {
                   Get.dialog(

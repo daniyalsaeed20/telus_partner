@@ -7,9 +7,11 @@ import 'package:get/get.dart';
 import 'package:telus_partner_non_responsive/constants/colors.dart';
 import 'package:telus_partner_non_responsive/controllers/leads_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/loading_controller.dart';
+import 'package:telus_partner_non_responsive/controllers/notifications_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/organization_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/user_data_controller.dart';
 import 'package:telus_partner_non_responsive/models/leads/leads_model.dart';
+import 'package:telus_partner_non_responsive/models/notifications_model.dart';
 import 'package:telus_partner_non_responsive/models/organization_model.dart';
 import 'package:telus_partner_non_responsive/models/user_data_model.dart';
 import 'package:telus_partner_non_responsive/views/Admin/admin_home_page.dart';
@@ -27,6 +29,8 @@ class DbController extends GetxController {
       FirebaseFirestore.instance.collection('leads');
   CollectionReference organizationCollection =
       FirebaseFirestore.instance.collection('organizations');
+  CollectionReference notificationsCollection =
+      FirebaseFirestore.instance.collection('notifications');
 
   BuildContext context;
 
@@ -128,6 +132,15 @@ class DbController extends GetxController {
         password: UserDataController.passwordController.text,
       );
       userCollection.add(newUser.toMap());
+      NotificationController notificationController =
+          Get.put(NotificationController());
+      notificationController.notificationsModel = NotificationsModel(
+        isSignUp: true,
+        date: newUser.dateAdded,
+        isLead: false,
+        name: newUser.firstName + " " + newUser.lastName,
+      );
+      uploadNotification(notificationController.notificationsModel);
       Get.snackbar(
         'Success.',
         'Sign Up Successful',
@@ -240,6 +253,17 @@ class DbController extends GetxController {
       userCollection
           .doc(userDataController.userDataModel.reference.id)
           .update(userDataController.userDataModel.toMapForLeads());
+      NotificationController notificationController =
+          Get.put(NotificationController());
+      notificationController.notificationsModel = NotificationsModel(
+        isSignUp: false,
+        date: leadsController.date,
+        isLead: true,
+        name: userDataController.userDataModel.firstName +
+            " " +
+            userDataController.userDataModel.lastName,
+      );
+      uploadNotification(notificationController.notificationsModel);
 
       Get.snackbar(
         'Success',
@@ -332,6 +356,38 @@ class DbController extends GetxController {
     leadsController.update();
   }
 
+  getAdminLeads() async {
+    LeadsController leadsController = Get.put(LeadsController());
+    UserDataController userDataController = Get.put(UserDataController());
+    leadsController.adminLeads.clear();
+    leadsController.adminPendingLeads = 0;
+    leadsController.adminApprovedLeads = 0;
+    leadsController.adminCanceledLeads = 0;
+    var snapShots = await leadsCollection.get();
+    if (snapShots.size > 0) {
+      snapShots.docs.forEach(
+        (doc) {
+          if (doc["status"] == "Pending") {
+            leadsController.adminPendingLeads =
+                leadsController.adminPendingLeads + 1;
+          } else if (doc["status"] == "Approved") {
+            leadsController.adminApprovedLeads =
+                leadsController.adminApprovedLeads + 1;
+          } else if (doc["status"] == "Canceled") {
+            leadsController.adminCanceledLeads =
+                leadsController.adminCanceledLeads + 1;
+          }
+          leadsController.adminLeads.add(
+            Leads.fromDocumentSnapshot(
+              doc,
+            ),
+          );
+        },
+      );
+    }
+    leadsController.update();
+  }
+
   getOrgLeads() async {
     OrganizationController organizationController =
         Get.put(OrganizationController());
@@ -368,10 +424,18 @@ class DbController extends GetxController {
     organizationController.update();
   }
 
-  addEmployee(UserDataModel userDataModel) {
+  addEmployee(UserDataModel userDataModel) async {
     OrganizationController organizationController =
         Get.put(OrganizationController());
+    UserDataController userDataController = Get.put(UserDataController());
     userCollection.add(userDataModel.toMap());
+
+    if (userDataController.userDataModel.type != "Admin") {
+      organizationController.selectedOrganizationModel =
+          OrganizationModel.fromDocumentSnapshot(await organizationCollection
+              .doc(userDataController.userDataModel.organization)
+              .get());
+    }
     if (userDataModel.type == "Employee") {
       organizationController.selectedOrganizationModel.totalEmployees =
           organizationController.selectedOrganizationModel.totalEmployees + 1;
@@ -383,6 +447,17 @@ class DbController extends GetxController {
         .doc(organizationController.selectedOrganizationModel.reference.id)
         .update(organizationController.selectedOrganizationModel
             .toMapForEmployees());
+    NotificationController notificationController =
+        Get.put(NotificationController());
+    notificationController.notificationsModel = NotificationsModel(
+      date: userDataModel.dateAdded,
+      isLead: false,
+      isSignUp: false,
+      name: userDataController.userDataModel.firstName +
+          " " +
+          userDataController.userDataModel.lastName,
+    );
+    uploadNotification(notificationController.notificationsModel);
     Get.snackbar(
       'Success.',
       'User Added Successfully',
@@ -446,5 +521,9 @@ class DbController extends GetxController {
   ) {
     leads.status = string;
     leadsCollection.doc(leads.reference.id).update(leads.toMapForStatus());
+  }
+
+  uploadNotification(NotificationsModel notificationsModel) {
+    notificationsCollection.add(notificationsModel.toMap());
   }
 }

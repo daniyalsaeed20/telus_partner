@@ -999,6 +999,7 @@ class _ManagerHomePageState extends State<ManagerHomePage> {
   }
 
   Widget employeesTab(Size size, BuildContext context) {
+    UserDataController userDataController = Get.put(UserDataController());
     return Container(
       color: backgroundColor,
       height: Get.height,
@@ -1031,7 +1032,9 @@ class _ManagerHomePageState extends State<ManagerHomePage> {
                 vertical: 32,
                 horizontal: 128,
               ),
-              child: employeesList(),
+              child: employeesList(
+                controller: userDataController,
+              ),
             )
           ],
         ),

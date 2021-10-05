@@ -66,6 +66,10 @@ class LeadsController extends GetxController {
   int organizationApprovedLeads;
   int organizationPendingLeads;
   int organizationCanceledLeads;
+
+  int adminApprovedLeads;
+  int adminPendingLeads;
+  int adminCanceledLeads;
   int portingInfoCount = 0;
 /* -------------------------------------------------------------------------- */
 /*                                    Lists                                   */
@@ -74,6 +78,7 @@ class LeadsController extends GetxController {
   List employeeLeads = [];
   List selectedEmployeeLeads = [];
   List organizationLeads = [];
+  List adminLeads = [];
   List<PortingInfoModel> portingInfoList = [];
 
 /* -------------------------------------------------------------------------- */
