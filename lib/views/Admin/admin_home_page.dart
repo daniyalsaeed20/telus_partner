@@ -10,6 +10,7 @@ import 'package:telus_partner_non_responsive/constants/colors.dart';
 import 'package:telus_partner_non_responsive/controllers/db_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/employee_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/leads_controller.dart';
+import 'package:telus_partner_non_responsive/controllers/notifications_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/organization_controller.dart';
 import 'package:telus_partner_non_responsive/controllers/user_data_controller.dart';
 import 'package:telus_partner_non_responsive/models/leads/leads_model.dart';
@@ -90,6 +91,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
         text: 'Leads Notifications',
         icon: Icons.edit_notifications_outlined,
         onPressed: () {
+          dbController.getLeadNotifications();
           UserDataController.selectedTab = 4;
           userDataController.update();
         },
@@ -98,6 +100,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
         text: 'General',
         icon: Icons.notification_add_outlined,
         onPressed: () {
+          dbController.getGeneralNotifications();
           UserDataController.selectedTab = 5;
           userDataController.update();
         },
@@ -971,81 +974,69 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 alignment: WrapAlignment.center,
                 children: [
                   profileHomeCard(),
-                  Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Container(
-                      constraints: const BoxConstraints(
-                        minHeight: 570,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        color: white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 5,
-                            spreadRadius: 0.1,
-                            offset: const Offset(0, 0),
+                  GetBuilder<NotificationController>(
+                    init: NotificationController(),
+                    builder: (notificationController) {
+                      return Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Container(
+                          constraints: const BoxConstraints(
+                            minHeight: 570,
                           ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              Row(
-                                // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: 16,
-                                      bottom: 48,
-                                    ),
-                                    child: customHeading(
-                                      text: "Lead Notifications",
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Divider(
-                                  height: 1,
-                                  color: greenLight,
-                                ),
-                              ),
-                              PaginateFirestore(
-                                shrinkWrap: true,
-                                // Use SliverAppBar in header to make it sticky
-
-                                // item builder type is compulsory.
-                                itemBuilderType: PaginateBuilderType
-                                    .listView, //Change types accordingly
-                                itemBuilder:
-                                    (index, context, documentSnapshot) {
-                                  NotificationsModel notificationModel =
-                                      NotificationsModel.fromDocumentSnapshot(
-                                          documentSnapshot);
-
-                                  return notificationCard(
-                                    name: notificationModel.name,
-                                    date: notificationModel.date,
-                                    isLead: notificationModel.isLead,
-                                  );
-                                },
-                                query: dbController.notificationsCollection
-                                    .where("isLead", isEqualTo: true)
-                                    .orderBy("date", descending: true),
-                                isLive: true,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            color: white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 5,
+                                spreadRadius: 0.1,
+                                offset: const Offset(0, 0),
                               ),
                             ],
                           ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  Row(
+                                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          top: 16,
+                                          bottom: 48,
+                                        ),
+                                        child: customHeading(
+                                          text: "Lead Notifications",
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Divider(
+                                      height: 1,
+                                      color: greenLight,
+                                    ),
+                                  ),
+                                  for(int i = 0; i < notificationController.leadsNotifications.length;i++)
+                                  notificationCard(
+                                    name: notificationController.leadsNotifications[i].name,
+                                    date: notificationController.leadsNotifications[i].date,
+                                    isLead: notificationController.leadsNotifications[i].isLead,
+                                    isSignup: notificationController.leadsNotifications[i].isSignUp,
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    }
                   ),
                 ],
               ),
@@ -1070,81 +1061,69 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 alignment: WrapAlignment.center,
                 children: [
                   profileHomeCard(),
-                  Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Container(
-                      constraints: const BoxConstraints(
-                        minHeight: 570,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        color: white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 5,
-                            spreadRadius: 0.1,
-                            offset: const Offset(0, 0),
+                  GetBuilder<NotificationController>(
+                    init: NotificationController(),
+                    builder: (notificationController) {
+                      return Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Container(
+                          constraints: const BoxConstraints(
+                            minHeight: 570,
                           ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              Row(
-                                // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: 16,
-                                      bottom: 48,
-                                    ),
-                                    child: customHeading(
-                                      text: "General Notifications",
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Divider(
-                                  height: 1,
-                                  color: greenLight,
-                                ),
-                              ),
-                              PaginateFirestore(
-                                shrinkWrap: true,
-                                // Use SliverAppBar in header to make it sticky
-
-                                // item builder type is compulsory.
-                                itemBuilderType: PaginateBuilderType
-                                    .listView, //Change types accordingly
-                                itemBuilder:
-                                    (index, context, documentSnapshot) {
-                                  NotificationsModel notificationModel =
-                                      NotificationsModel.fromDocumentSnapshot(
-                                          documentSnapshot);
-
-                                  return notificationCard(
-                                    name: notificationModel.name,
-                                    date: notificationModel.date,
-                                    isLead: notificationModel.isLead,
-                                  );
-                                },
-                                query: dbController.notificationsCollection
-                                    .where("isLead", isEqualTo: false)
-                                    .orderBy("date", descending: true),
-                                isLive: true,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            color: white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 5,
+                                spreadRadius: 0.1,
+                                offset: const Offset(0, 0),
                               ),
                             ],
                           ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  Row(
+                                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          top: 16,
+                                          bottom: 48,
+                                        ),
+                                        child: customHeading(
+                                          text: "General Notifications",
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Divider(
+                                      height: 1,
+                                      color: greenLight,
+                                    ),
+                                  ),
+                                  for(int i = 0; i < notificationController.generalNotifications.length;i++)
+                                  notificationCard(
+                                    name: notificationController.generalNotifications[i].name,
+                                    date: notificationController.generalNotifications[i].date,
+                                    isLead: notificationController.generalNotifications[i].isLead,
+                                    isSignup: notificationController.generalNotifications[i].isSignUp,
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    }
                   ),
                 ],
               ),

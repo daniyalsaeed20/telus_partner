@@ -526,4 +526,50 @@ class DbController extends GetxController {
   uploadNotification(NotificationsModel notificationsModel) {
     notificationsCollection.add(notificationsModel.toMap());
   }
+
+  getLeadNotifications() async {
+    NotificationController notificationController =
+        Get.put(NotificationController());
+        notificationController.leadsNotifications.clear();
+    var snapShots = await notificationsCollection
+        .where("isLead", isEqualTo: true)
+        .orderBy("date", descending: true)
+        .get();
+
+    if (snapShots.size > 0) {
+      snapShots.docs.forEach(
+        (doc) {
+          notificationController.leadsNotifications.add(
+            NotificationsModel.fromDocumentSnapshot(
+              doc,
+            ),
+          );
+        },
+      );
+    }
+    notificationController.update();
+  }
+  getGeneralNotifications() async {
+    
+    NotificationController notificationController =
+        Get.put(NotificationController());
+        notificationController.generalNotifications.clear();
+    var snapShots = await notificationsCollection
+        .where("isLead", isEqualTo: false)
+        .orderBy("date", descending: true)
+        .get();
+
+    if (snapShots.size > 0) {
+      snapShots.docs.forEach(
+        (doc) {
+          notificationController.generalNotifications.add(
+            NotificationsModel.fromDocumentSnapshot(
+              doc,
+            ),
+          );
+        },
+      );
+    }
+    notificationController.update();
+  }
 }
